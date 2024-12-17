@@ -1,0 +1,11 @@
+/vis/verbose errors
+/vis/open OGL 600x600-0+0
+/vis/viewer/set/style wireframe
+/vis/viewer/set/hiddenEdge 1
+/vis/drawVolume
+/vis/viewer/set/viewpointThetaPhi 35 20
+/vis/viewer/zoom 1.3
+/vis/scene/add/axes 0 0 0 5 cm
+/vis/scene/add/trajectories smooth
+/vis/viewer/set/autoRefresh true
+/vis/viewer/flush

@@ -1,0 +1,42 @@
+# Ignorowanie całego katalogu build
+build/*
+Build/
+*.tar
+
+# Wyjątek dla pliku init_vis.mac
+!build/init_vis.mac
+
+# Ignorowanie plików generowanych przez CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# Pliki obiektowe
+*.o
+
+# Biblioteki statyczne
+*.a
+
+# Pliki tymczasowe i testowe
+tmp/
+progress.*
+progress.marks
+
+# Katalogi tymczasowe (np. laby)
+lab_1/
+lab_3/
+lab_4/
+lab_4_2/
+lab_5/
+
+# Logi
+*.log
+
+# Pliki generowane przez kompilatory
+a.out
+
+# Inne pliki tymczasowe
+*.json
+.vscode/
+.qt/
