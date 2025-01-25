@@ -3,6 +3,9 @@
 
 #include "G4VUserDetectorConstruction.hh"
 #include "globals.hh"
+#include "MyPhotonSD.hh"
+#include "G4SDManager.hh"
+
 
 class MyDetectorConstruction : public G4VUserDetectorConstruction {
 public:
@@ -15,7 +18,6 @@ private:
   void DefineMaterials();
   void SetupGeometry();
 
-  // World volume
   G4LogicalVolume* fWorldLogical;
   G4VPhysicalVolume* fWorldPhysical;
 };

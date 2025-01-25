@@ -1,5 +1,5 @@
 /vis/verbose errors
-/vis/open OGL 600x600-0+0
+/vis/open OGL
 /vis/viewer/set/style wireframe
 /vis/viewer/set/hiddenEdge 1
 /vis/drawVolume

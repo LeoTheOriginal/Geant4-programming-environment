@@ -3,7 +3,7 @@
 #include "MyPrimaryGeneratorAction.hh"
 #include "MyRunAction.hh"
 #include "MyRun.hh"
-
+#include "MyEventAction.hh"
 #include "G4RunManager.hh"
 #include "G4UImanager.hh"
 #include "G4VisExecutive.hh"
@@ -21,6 +21,7 @@ int main(int argc, char** argv)
   // Ustawienia akcji
   runManager->SetUserAction(new MyPrimaryGeneratorAction);
   runManager->SetUserAction(new MyRunAction);
+  runManager->SetUserAction(new MyEventAction);
 
   // Inicjalizacja Geant4 kernel
   runManager->Initialize();
@@ -33,14 +34,11 @@ int main(int argc, char** argv)
   G4UImanager* UImanager = G4UImanager::GetUIpointer();
 
   if (argc == 1) {
-    // Interaktywna sesja
     G4UIExecutive* ui = new G4UIExecutive(argc, argv);
-    // Możemy np. ustawić styl wizualizacji
     UImanager->ApplyCommand("/control/execute init_vis.mac");
     ui->SessionStart();
     delete ui;
   } else {
-    // Wykonanie makra
     G4String macro = argv[1];
     UImanager->ApplyCommand("/control/execute " + macro);
   }

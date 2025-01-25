@@ -22,6 +22,8 @@
 #include "G4eplusAnnihilation.hh"
 #include "G4eMultipleScattering.hh"
 
+#include "G4Cerenkov.hh"
+
 MyPhysicsList::MyPhysicsList() : G4VUserPhysicsList() {
   defaultCutValue = 1.0*mm;
   SetVerboseLevel(1);
@@ -59,16 +61,23 @@ void MyPhysicsList::ConstructEM() {
       pmanager->AddDiscreteProcess(new G4PhotoElectricEffect());
 
     } else if (particleName == "e-") {
-      pmanager->AddProcess(new G4eMultipleScattering, -1,1,1);
+      pmanager->AddProcess(new G4Cerenkov(), -1,1,1);
       pmanager->AddProcess(new G4eIonisation,         -1,2,2);
       pmanager->AddProcess(new G4eBremsstrahlung,     -1,3,3);
 
     } else if (particleName == "e+") {
-      pmanager->AddProcess(new G4eMultipleScattering, -1,1,1);
+      pmanager->AddProcess(new G4Cerenkov(), -1,1,1);
       pmanager->AddProcess(new G4eIonisation,         -1,2,2);
       pmanager->AddProcess(new G4eBremsstrahlung,     -1,3,3);
       pmanager->AddProcess(new G4eplusAnnihilation,    0,-1,4);
+      
+    } else if (particleName == "opticalphoton") {
+        auto cerenkov = new G4Cerenkov("Cerenkov");
+        cerenkov->SetMaxNumPhotonsPerStep(300); // Maks. liczba fotonów na krok
+        cerenkov->SetTrackSecondariesFirst(true);
+        pmanager->AddProcess(cerenkov);
     }
+
   }
 }
 

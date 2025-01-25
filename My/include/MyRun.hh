@@ -7,6 +7,11 @@ class MyRun : public G4Run {
 public:
   MyRun();
   virtual ~MyRun();
+
+  void RecordEvent(const G4Event* event) override;
+
+private:
+  G4int fPhotonCollectionId;
 };
 
 #endif
