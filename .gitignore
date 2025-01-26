@@ -5,6 +5,8 @@ Build/
 
 # Wyjątek dla pliku init_vis.mac
 !build/init_vis.mac
+!build/run.mac
+!build/traj_vis.mac
 
 # Ignorowanie plików generowanych przez CMake
 CMakeCache.txt

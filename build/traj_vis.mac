@@ -1,0 +1,6 @@
+/vis/open OGL 600x600-0+0
+/vis/viewer/set/style wireframe
+/vis/drawVolume
+/vis/viewer/set/viewpointThetaPhi 35 20
+/vis/scene/add/trajectories
+/run/beamOn 100
