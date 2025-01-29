@@ -2,24 +2,23 @@
 #define MYDETECTORCONSTRUCTION_HH
 
 #include "G4VUserDetectorConstruction.hh"
-#include "globals.hh"
-#include "MyPhotonSD.hh"
-#include "G4SDManager.hh"
 
+class G4VPhysicalVolume;
+class G4LogicalVolume;
 
 class MyDetectorConstruction : public G4VUserDetectorConstruction {
-public:
+ public:
   MyDetectorConstruction();
-  virtual ~MyDetectorConstruction();
+  ~MyDetectorConstruction() override;
 
-  virtual G4VPhysicalVolume* Construct();
+  G4VPhysicalVolume* Construct() override;
 
-private:
+ private:
   void DefineMaterials();
   void SetupGeometry();
 
-  G4LogicalVolume* fWorldLogical;
-  G4VPhysicalVolume* fWorldPhysical;
+  G4LogicalVolume* fpWorldLogical;
+  G4VPhysicalVolume* fpWorldPhysical;
 };
 
 #endif

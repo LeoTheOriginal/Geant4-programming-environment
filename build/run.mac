@@ -1,2 +1,32 @@
+# run.mac
+# Makro do uruchomienia symulacji w trybie wsadowym
+
+# Verbose
+/control/verbose 1
+/run/verbose 1
+/tracking/verbose 0
+
+# Możemy ustawić liczbę wątków (jeśli wielowątkowe):
+#/run/numberOfThreads 4
+
+# Ewentualnie wyłączamy wizualizację (jeśli w ogóle była włączona):
+# /vis/verbose 0
+# /vis/disable
+
+# Możemy ustawić parametry w DetectorMessenger (jeśli go mamy):
+#/MyDetector/SetFiberPitch 2.5 mm
+
+# Może definicja energii cząstki w ParticleGun (jeśli mamy UIcommands w PrimaryGenerator):
+#/gun/energy 120 MeV
+
+# A teraz zainicjujemy run i włączymy "beam on"
+# Najpierw parametry 'run' (np. seeds, itp.)
+# /random/resetEngineFrom seed.dat
+
 /run/initialize
-/run/beamOn 1000
+
+# Start symulacji:
+#/run/beamOn 100
+/run/beamOn 100
+
+# Po zakończeniu runa plik ROOT będzie zapisany i zamknięty w MyRunAction::EndOfRunAction()

@@ -3,15 +3,15 @@
 
 #include "G4UserRunAction.hh"
 
+class G4Run;
+
 class MyRunAction : public G4UserRunAction {
-public:
+ public:
   MyRunAction();
-  virtual ~MyRunAction();
+  ~MyRunAction() override;
 
-  virtual void BeginOfRunAction(const G4Run*);
-  virtual void EndOfRunAction(const G4Run*);
-
-  virtual G4Run* GenerateRun();
+  void BeginOfRunAction(const G4Run*) override;
+  void EndOfRunAction(const G4Run*) override;
 };
 
 #endif

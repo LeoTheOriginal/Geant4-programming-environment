@@ -1,237 +1,161 @@
 #include "MyDetectorConstruction.hh"
-#include "G4NistManager.hh"
 #include "G4Box.hh"
-#include "G4Tubs.hh"
+#include "G4Colour.hh"
 #include "G4LogicalVolume.hh"
+#include "G4Material.hh"
+#include "G4NistManager.hh"
 #include "G4PVPlacement.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4Tubs.hh"
 #include "G4VisAttributes.hh"
-#include "G4Colour.hh"
-
-#include "G4Material.hh"
-#include "G4PVParameterised.hh"
-#include "G4RunManager.hh"
-#include "G4MultiFunctionalDetector.hh"
-#include "G4SDManager.hh"
-#include "G4PSSphereSurfaceCurrent.hh"
-#include "G4Sphere.hh"
+#include "G4OpticalSurface.hh"
 
 MyDetectorConstruction::MyDetectorConstruction()
-: fWorldLogical(nullptr), fWorldPhysical(nullptr)
-{}
+    : fpWorldLogical(nullptr), fpWorldPhysical(nullptr) {}
 
-MyDetectorConstruction::~MyDetectorConstruction(){}
+MyDetectorConstruction::~MyDetectorConstruction() {}
 
 G4VPhysicalVolume* MyDetectorConstruction::Construct() {
   DefineMaterials();
   SetupGeometry();
-  return fWorldPhysical;
+  return fpWorldPhysical;
 }
 
 void MyDetectorConstruction::DefineMaterials() {
+  G4NistManager* nistManager = G4NistManager::Instance();
 
+  // Define materials
+  G4Material* air = nistManager->FindOrBuildMaterial("G4_AIR");
+  G4Material* copper = nistManager->FindOrBuildMaterial("G4_Cu");
+  G4Material* quartz = nistManager->FindOrBuildMaterial("G4_SILICON_DIOXIDE");
+  G4Material* pmma = nistManager->FindOrBuildMaterial("G4_PLEXIGLASS");
+  G4Material* tungsten = nistManager->FindOrBuildMaterial("G4_W");
 
+  // Optical properties for Quartz (SiO2)
+  G4MaterialPropertiesTable* mptQuartz = new G4MaterialPropertiesTable();
+  G4double photonEnergy[] = {2.0*eV, 3.0*eV}; // Example energy range
+  G4double rindexQuartz[] = {1.54, 1.54}; // Refractive index
+  G4double absorptionQuartz[] = {50.*cm, 50.*cm}; // Absorption length
+  mptQuartz->AddProperty("RINDEX", photonEnergy, rindexQuartz, 2);
+  mptQuartz->AddProperty("ABSLENGTH", photonEnergy, absorptionQuartz, 2);
+  quartz->SetMaterialPropertiesTable(mptQuartz);
 
+  // Optical properties for PMMA (Cladding)
+  G4MaterialPropertiesTable* mptPMMA = new G4MaterialPropertiesTable();
+  G4double rindexPMMA[] = {1.49, 1.49};
+  G4double absorptionPMMA[] = {50.*cm, 50.*cm};
+  mptPMMA->AddProperty("RINDEX", photonEnergy, rindexPMMA, 2);
+  mptPMMA->AddProperty("ABSLENGTH", photonEnergy, absorptionPMMA, 2);
+  pmma->SetMaterialPropertiesTable(mptPMMA);
 
+  // --- Właściwości optyczne dla wolframu ---
+  G4double rindexTungsten[] = {3.3, 3.3};  // Współczynnik załamania
+  G4double absorptionTungsten[] = {10.*cm, 10.*cm};  // Długość absorpcji
 
-                      //////
-                    G4String symbol;             
-                    G4double a, z, density;     
-                    G4int ncomponents, natoms;
-                    G4double fractionmass;	
-                    // Define simple materials
-                    // Define beryllium, silicon and iron 
+  G4MaterialPropertiesTable* mptTungsten = new G4MaterialPropertiesTable();
+  mptTungsten->AddProperty("RINDEX", photonEnergy, rindexTungsten, 2);
+  mptTungsten->AddProperty("ABSLENGTH", photonEnergy, absorptionTungsten, 2);
+  tungsten->SetMaterialPropertiesTable(mptTungsten);
 
-                    new G4Material("Titanium",  z=22., a=47.90*g/mole,    density=4.540*g/cm3);
-                    new G4Material("Beryllium", z=4.,  a=9.012182*g/mole, density=1.8480*g/cm3);
-                    new G4Material("Silicon",   z=14., a=28.0855*g/mole,  density=2.330*g/cm3);
-                    new G4Material("Iron",      z=26., a=55.845*g/mole,   density=7.87*g/cm3);
+  // --- Właściwości powierzchni ---
+  G4OpticalSurface* opticalSurface = new G4OpticalSurface("FiberSurface");
+  opticalSurface->SetType(dielectric_metal);
+  opticalSurface->SetModel(unified);
+  opticalSurface->SetFinish(polished);
 
-                    new G4Material("Copper", z=29, a=63.546*g/mole, density=8.920*g/cm3);
+  G4MaterialPropertiesTable* surfaceMPT = new G4MaterialPropertiesTable();
+  G4double reflectivity[] = {0.9, 0.9};  // Odbicie
+  surfaceMPT->AddProperty("REFLECTIVITY", photonEnergy, reflectivity, 2);
+  opticalSurface->SetMaterialPropertiesTable(surfaceMPT);
 
-
-                    // Define elements
-                    G4Element* N = new G4Element("Nitrogen", symbol="N", z=7., a=14.01*g/mole);
-                    G4Element* O = new G4Element("Oxygen",   symbol="O", z=8., a=16.00*g/mole);
-                    G4Element* Si = new G4Element("Silicon", symbol="Si", z=14., a=28.09*g/mole);
-                    G4Element* C = new G4Element ("Carbon", symbol="C", z=6, a=12.01*g/mole);
-                    G4Element* H = new G4Element ("Hydrogen", symbol="H", z=1, a=1.01*g/mole);
-
-                    //define quartz
-                    G4Material* SiO2 = new G4Material("Quartz", density=2.65*g/cm3, ncomponents=2);
-                    SiO2->AddElement(Si, natoms=1);
-                    SiO2->AddElement(O, natoms=2);
-
-                    // Define air
-                    G4Material* air = new G4Material("Air", density= 1.290*mg/cm3, ncomponents=2);
-                    air->AddElement(N, fractionmass=0.7);
-                    air->AddElement(O, fractionmass=0.3);
-
-                    // Define vacuum
-                    G4Material* vacuum = new G4Material("Vacuum", density= 1.e-5*g/cm3, 
-                              ncomponents=1, kStateGas, CLHEP::STP_Temperature, 
-                              2.e-2*bar);
-
-                    vacuum->AddMaterial(air, fractionmass=1.);
-
-                    //Define PMMA (C502H8)
-                    // NIST reference 
-                    G4Material* PMMA = new G4Material("PMMA", 1.19*g/cm3, 3);
-                    PMMA -> AddElement(C, 5);
-                    PMMA -> AddElement(O, 2);
-                    PMMA -> AddElement(H, 8);
-
-                    // Dump material information
-                    G4cout << *(G4Material::GetMaterialTable()) << G4endl;
-                    ///////
-
-
-
-
-
-
-
-
-
-
-
-
-  G4NistManager* nist = G4NistManager::Instance();
-  // Powietrze do świata
-  nist->FindOrBuildMaterial("G4_AIR");
-  // Wolfram
-  nist->FindOrBuildMaterial("G4_W");
-  // Kwarc (SiO2)
-  G4Material* quartz = nist->FindOrBuildMaterial("G4_SILICON_DIOXIDE");
-  G4MaterialPropertiesTable* quartzProperties = new G4MaterialPropertiesTable();
-
-  const G4int nEntries = 2;
-  G4double photonEnergy[nEntries] = {1.5*eV, 6.2*eV}; // Zakres energii światła
-  G4double refractiveIndex[nEntries] = {1.46, 1.46};  // Współczynnik załamania
-
-  quartzProperties->AddProperty("RINDEX", photonEnergy, refractiveIndex, nEntries);
-  quartz->SetMaterialPropertiesTable(quartzProperties);
-
-  G4Material* pmma = nist->FindOrBuildMaterial("G4_PLEXIGLASS");
-
-  G4MaterialPropertiesTable* pmmaProperties = new G4MaterialPropertiesTable();
-  G4double pmmaRefractiveIndex[nEntries] = {1.49, 1.49};
-  pmmaProperties->AddProperty("RINDEX", photonEnergy, pmmaRefractiveIndex, nEntries);
-  pmma->SetMaterialPropertiesTable(pmmaProperties);
-
+  // Print material information
+  G4cout << *(G4Material::GetMaterialTable()) << G4endl;
 }
 
 void MyDetectorConstruction::SetupGeometry() {
-  G4NistManager* nist = G4NistManager::Instance();
-  //G4Material* air   = nist->FindOrBuildMaterial("G4_AIR");
-  G4Material* tungsten = nist->FindOrBuildMaterial("G4_W");
-  //G4Material* quartz= nist->FindOrBuildMaterial("G4_SILICON_DIOXIDE");
+  // World
+  G4double worldSizeXY = 1.0 * m;
+  G4double worldSizeZ = 3.0 * m;
+  G4Box* worldSolid =
+      new G4Box("World", worldSizeXY / 2, worldSizeXY / 2, worldSizeZ / 2);
+  fpWorldLogical = new G4LogicalVolume(worldSolid, G4Material::GetMaterial("G4_AIR"),
+                                       "World");
+  fpWorldPhysical = new G4PVPlacement(
+      nullptr, G4ThreeVector(), fpWorldLogical, "World", nullptr, false, 0);
 
+  // Absorber (Tungsten)
+  G4double absorberSizeXY = 1.0 * cm;
+  G4double absorberSizeZ = 50.0 * cm;
+  G4Box* absorberSolid = new G4Box("Absorber", absorberSizeXY / 2,
+                                   absorberSizeXY / 2, absorberSizeZ / 2);
+  G4LogicalVolume* absorberLogical =
+      new G4LogicalVolume(absorberSolid, G4Material::GetMaterial("G4_W"),
+                          "Absorber");
+  new G4PVPlacement(nullptr, G4ThreeVector(), absorberLogical, "Absorber",
+                    fpWorldLogical, false, 0);
 
-                                                                        G4Material* air   = nist->FindOrBuildMaterial("Air");
-                                                                        G4Material* copper= nist->FindOrBuildMaterial("Copper");
-                                                                        G4Material* quartz= nist->FindOrBuildMaterial("Quartz");
-                                                                        G4Material* PMMA= nist->FindOrBuildMaterial("PMMA");
-                                                                        
+  // Pre-absorber (Copper)
+  G4double preAbsorberThickness = 10.0 * cm;
+  G4Box* preAbsorberSolid =
+      new G4Box("PreAbsorber", absorberSizeXY / 2, absorberSizeXY / 2,
+                preAbsorberThickness / 2);
+  G4LogicalVolume* preAbsorberLogical =
+      new G4LogicalVolume(preAbsorberSolid, G4Material::GetMaterial("G4_Cu"),
+                          "PreAbsorber");
+  new G4PVPlacement(nullptr, G4ThreeVector(0., 0., -absorberSizeZ / 2 -
+                                                    preAbsorberThickness / 2),
+                    preAbsorberLogical, "PreAbsorber", fpWorldLogical, false, 0);
 
-  // Wymiary świata
-  G4double worldX = 1.0*m;
-  G4double worldY = 1.0*m;
-  G4double worldZ = 1.0*m;
+  // Fiber (Quartz)
+  G4double fiberRadius = 0.625 * mm;
+  G4double fiberLength = absorberSizeZ;
+  G4Tubs* fiberSolid =
+      new G4Tubs("Fiber", 0., fiberRadius, fiberLength / 2, 0., 360. * deg);
+  G4LogicalVolume* fiberLogical =
+      new G4LogicalVolume(fiberSolid, G4Material::GetMaterial("G4_SILICON_DIOXIDE"),
+                          "Fiber");
 
-  G4Box* worldSolid = new G4Box("World_Solid", worldX/2., worldY/2., worldZ/2.);
-  fWorldLogical = new G4LogicalVolume(worldSolid, air, "World_Logical");
-  fWorldPhysical = new G4PVPlacement(0, G4ThreeVector(), fWorldLogical, 
-                                     "World_Physical", 0, false, 0);
+  // PMMA Cladding
+  G4double claddingThickness = 0.1 * mm;
+  G4Tubs* claddingSolid = new G4Tubs(
+      "Cladding", fiberRadius, fiberRadius + claddingThickness, fiberLength / 2,
+      0., 360. * deg);
+  G4LogicalVolume* claddingLogical =
+      new G4LogicalVolume(claddingSolid, G4Material::GetMaterial("G4_PLEXIGLASS"),
+                          "Cladding");
+  new G4PVPlacement(nullptr, G4ThreeVector(), claddingLogical, "Cladding",
+                    fiberLogical, false, 0);
 
-  // Blok wolframowy: 1x1x50 cm^3
-  G4double WX = 1.0*cm; 
-  G4double WY = 1.0*cm;
-  G4double WZ = 50.*cm; 
-  G4Box* copperBlockSolid = new G4Box("CopperBlock_Solid", WX/2., WY/2., WZ/2.);
-  G4LogicalVolume* copperBlockLogical = 
-  new G4LogicalVolume(copperBlockSolid, tungsten, "CopperBlock_Logical");
-
-  new G4PVPlacement(0, G4ThreeVector(), copperBlockLogical, "CopperBlock_Physical",
-                    fWorldLogical, false, 0);
-
-
-
-                    // absorber 
-                      G4double absX = 1.0*cm; 
-                      G4double absY = 1.0*cm;
-                      G4double absZ = 10.*cm; 
-
-                      G4Box* copperAbsorberSolid = new G4Box("copperAbsorber_Solid", absX/2., absY/2., absZ/2.);
-                      G4LogicalVolume* copperAbsorberLogical = 
-                      new G4LogicalVolume(copperAbsorberSolid, copper, "copperAbsorber_Logical");
-
-                      new G4PVPlacement(0, G4ThreeVector(0,0,25*cm+absZ/2), copperAbsorberLogical, "copperAbsorber_Physical",
-                                        fWorldLogical, false, 0);
-
-  // Włókna kwarcowe:
-  // Promień włókna: 0.625 mm = 0.0625 cm
-  // Długość włókna: 50 cm (tak jak blok)
-  G4double fiberRadius = 0.625*mm;
-  G4double fiberLength = 50.*cm;
-  G4Tubs* fiberSolid = new G4Tubs("Fiber_Solid", 0., fiberRadius, fiberLength/2., 0.*deg, 360.*deg);
-
-  G4LogicalVolume* fiberLogical = 
-    new G4LogicalVolume(fiberSolid, quartz, "Fiber_Logical");
-
-
-   G4double PMMA_thickness=0.1*mm;
-
-
-  G4Tubs* PMMA_Solid = new G4Tubs("PMMA_tube", // name
-	fiberRadius, // inner radius
-	fiberRadius+PMMA_thickness, // outer radius
-	fiberLength/2., // half length in Z
-	0.*deg, // the starting phi angle
-	360.*deg); // the angle of the segment
-
-  G4LogicalVolume* PMMA_Logical = 
-    new G4LogicalVolume(PMMA_Solid, PMMA, "PMMA_Logical");
-
-  // Układ 3x3 włókien:
-  // Odległość osi włókien: 2.632 mm
-  G4double spacing = 2.632*mm;
-
-  // Włókna rozmieszczone symetrycznie wokół (0,0):
-  // Indeksy i,j ∈ {-1,0,1}, xPos = i*spacing, yPos = j*spacing
-  for (int i=-1; i<=1; i++) {
-    for (int j=-1; j<=1; j++) {
-      G4double xPos = i*spacing;
-      G4double yPos = j*spacing;
-      G4ThreeVector pos(xPos, yPos, 0.);
-      new G4PVPlacement(0, pos, fiberLogical, "Fiber_Physical", copperBlockLogical, false, (i+1)*3+(j+1));
-
-	  new G4PVPlacement(0, pos, PMMA_Logical, "PMMA_Physical", copperBlockLogical, false, (i+1)*3+(j+1));
+  // Placement of fibers in a 3x3 grid
+  G4double fiberPitch = 2.632 * mm;
+  for (G4int i = -1; i <= 1; i++) {
+    for (G4int j = -1; j <= 1; j++) {
+      G4double xPosFiber = i * fiberPitch;
+      G4double yPosFiber = j * fiberPitch;
+      G4cout << "Fiber position X: " << xPosFiber << " mm, Y: " << yPosFiber
+             << " mm" << G4endl;
+      new G4PVPlacement(nullptr, G4ThreeVector(xPosFiber, yPosFiber, 0.),
+                        fiberLogical, "Fiber", absorberLogical, false,
+                        (i + 1) * 3 + (j + 1));
     }
   }
 
-  // Atrybuty wizualizacji
-  fWorldLogical->SetVisAttributes(G4VisAttributes::GetInvisible());
+  // Visualization attributes
+  fpWorldLogical->SetVisAttributes(G4VisAttributes::GetInvisible());
 
-  G4VisAttributes* copperVis = new G4VisAttributes(G4Colour(0.7,0.4,0.4));
-  copperVis->SetForceWireframe(true);
-  copperBlockLogical->SetVisAttributes(copperVis);
+  G4VisAttributes* absorberVisAtt = new G4VisAttributes(G4Colour::Gray());
+  absorberVisAtt->SetVisibility(true);
+  absorberLogical->SetVisAttributes(absorberVisAtt);
 
-  G4VisAttributes* copperAbsorberVis = new G4VisAttributes(G4Colour(0.8,0.5,0.5));
-  copperAbsorberVis->SetForceSolid(true);
-  copperAbsorberLogical->SetVisAttributes(copperAbsorberVis);
+  G4VisAttributes* preAbsorberVisAtt = new G4VisAttributes(G4Colour::Brown());
+  preAbsorberVisAtt->SetVisibility(true);
+  preAbsorberLogical->SetVisAttributes(preAbsorberVisAtt);
 
-  G4VisAttributes* fiberVis = new G4VisAttributes(G4Colour(0.0,0.0,1.0));
-  fiberVis->SetForceSolid(true);
-  fiberLogical->SetVisAttributes(fiberVis);
+  G4VisAttributes* fiberVisAtt = new G4VisAttributes(G4Colour::Blue());
+  fiberVisAtt->SetVisibility(true);
+  fiberLogical->SetVisAttributes(fiberVisAtt);
 
-  G4VisAttributes* PMMA_Vis = new G4VisAttributes(G4Colour(0.0,1.,0.7));
-  PMMA_Vis->SetForceSolid(true);
-  PMMA_Logical->SetVisAttributes(PMMA_Vis);
-
-  G4SDManager* sdManager = G4SDManager::GetSDMpointer();
-  MyPhotonSD* photonSD = new MyPhotonSD("Photon");
-  sdManager->AddNewDetector(photonSD);
-  fiberLogical->SetSensitiveDetector(photonSD);
-
+  G4VisAttributes* claddingVisAtt = new G4VisAttributes(G4Colour::White());
+  claddingVisAtt->SetVisibility(true);
+  claddingLogical->SetVisAttributes(claddingVisAtt);
 }

@@ -10,7 +10,7 @@ project(My)
 #
 option(WITH_GEANT4_UIVIS "Build example with Geant4 UI and Vis drivers" ON)
 if(WITH_GEANT4_UIVIS)
-  find_package(Geant4 REQUIRED ui_all vis_all analysis)
+  find_package(Geant4 REQUIRED ui_all vis_all)
 else()
   find_package(Geant4 REQUIRED)
 endif()
@@ -20,7 +20,7 @@ endif()
 # Setup include directory for this project
 #
 include(${Geant4_USE_FILE})
-include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(${PROJECT_SOURCE_DIR}/include ${Geant4_INCLUDE_DIRS})
 
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project
