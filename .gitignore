@@ -3,6 +3,9 @@ build/*
 Build/
 *.tar
 
+#roznice w detektorze
+My/src/MyDetectorConstruction.cc
+
 # Wyjątek dla pliku init_vis.mac
 !build/init_vis.mac
 !build/run.mac
