@@ -35,7 +35,7 @@
 ---
 
 ## Struktura repozytorium
-Poniżej uproszczony widok ważniejszych katalogów i plików (zgodnie z Twoją strukturą):
+Poniżej uproszczony widok ważniejszych katalogów i plików:
 
 ```
 .
