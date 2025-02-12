@@ -6,197 +6,165 @@
 3. [Struktura repozytorium](#struktura-repozytorium)
 4. [Wymagania systemowe](#wymagania-systemowe)
 5. [Instrukcja uruchomienia](#instrukcja-uruchomienia)
-   - [Kompilacja i instalacja](#kompilacja-i-instalacja)
-   - [Uruchomienie symulacji (tryb wsadowy)](#uruchomienie-symulacji-tryb-wsadowy)
-   - [Uruchomienie wizualizacji (tryb interaktywny)](#uruchomienie-wizualizacji-tryb-interaktywny)
-   - [Uruchomienie analizy w ROOT](#uruchomienie-analizy-w-root)
+   - [Kompilacja i uruchomienie w trybie wsadowym](#kompilacja-i-uruchomienie-w-trybie-wsadowym)
+   - [Uruchomienie z wizualizacją (tryb interaktywny)](#uruchomienie-z-wizualizacją-tryb-interaktywny)
+   - [Analiza danych w ROOT](#analiza-danych-w-root)
 6. [Analiza kodu i zasady działania](#analiza-kodu-i-zasady-działania)
-   - [Geometria i konstrukcja detektora (MyDetectorConstruction)](#geometria-i-konstrukcja-detektora-mydetectorconstruction)
-   - [Lista procesów fizycznych (MyPhysicsList)](#lista-procesów-fizycznych-myphysicslist)
-   - [Generator cząstek (MyPrimaryGeneratorAction)](#generator-cząstek-myprimarygeneratoraction)
-   - [Akcje Run i Stepping (MyRunAction, MySteppingAction)](#akcje-run-i-stepping-myrunaction-mysteppingaction)
-   - [Makro ROOT do analizy (analyzePhotonsC)](#makro-root-do-analizy-analyzephotonsc)
+   - [Geometria i konstrukcja detektora](#geometria-i-konstrukcja-detektora)
+   - [Lista procesów fizycznych](#lista-procesów-fizycznych)
+   - [Generator cząstek](#generator-cząstek)
+   - [RunAction i SteppingAction](#runaction-i-steppingaction)
+   - [Makra i wizualizacja](#makra-i-wizualizacja)
 7. [Możliwe rozszerzenia](#możliwe-rozszerzenia)
-8. [Kod źródłowy na GitHubie](#kod-źródłowy-na-githubie)
+8. [Uwagi końcowe](#uwagi-końcowe)
 
 ---
 
 ## Opis projektu
-**High Resolution Calorimeter (HRC)** to projekt symulujący działanie kalorymetru wysokiej rozdzielczości typu "spagetti" w środowisku **Geant4**. Celem jest zbadanie procesu detekcji wysokoenergetycznych fotonów, które przechodząc przez warstwę absorbera (w naszym przypadku wolfram), wytwarzają kaskadę cząstek wtórnych. W symulacji szczególnie interesują nas fotony optyczne powstające na skutek promieniowania Czerenkowa w włóknach kwarcowych. Dane o energii i czasie dotarcia tych fotonów są zapisywane do pliku **ROOT** i następnie analizowane w makrze **ROOT**.
-
-Dzięki tej symulacji możemy wyznaczyć:
-- Sumaryczną energię wyemitowaną w postaci fotonów optycznych (proporcjonalną do energii pierwotnego fotonu).
-- Pozycję trafienia fotonu (z analizy poprzecznego profilu kaskady elektromagnetycznej).
+**High Resolution Calorimeter (HRC)** to projekt wykorzystujący środowisko [Geant4](https://geant4.web.cern.ch/) do symulacji działania kalorymetru wysokiej rozdzielczości typu "spagetti". W projekcie symulujemy wysokoenergetyczne fotony (np. 100 MeV), które w absorberze (wolfram) wytwarzają kaskadę elektromagnetyczną. W wyniku tej kaskady, w włóknach kwarcowych, generowane są fotony optyczne (Czerenkowa), a informacje o ich energii i czasie dotarcia do końca włókna zapisywane są w pliku ROOT do dalszej analizy.
 
 ---
 
 ## Główne funkcjonalności
-1. **Pełna geometria kalorymetru HRC** – definiujemy świat symulacji, absorber z wolframu, pre-absorber z miedzi oraz włókna kwarcowe (z otoczką PMMA).
-2. **Implementacja procesu Cerenkova** – umożliwia generację fotonów optycznych we włóknach kwarcowych.
-3. **Zapis danych do ntupla (ROOT)** – informacje o numerze zdarzenia, energii i czasie fotonu optycznego docierającego do końca włókna.
-4. **Makro ROOT** – automatycznie tworzy histogramy energii i czasu fotonów, dopasowując skalę do zakresu danych.
-5. **Możliwość wizualizacji** – tryb interaktywny w Geant4 pozwala obserwować trajektorie cząstek w detektorze.
+1. **Symulacja detektora**: Definicja absorbera (wolfram), pre-absorbera (miedź), włókien kwarcowych z powłoką PMMA.
+2. **Rejestracja fotonów optycznych**: Zbieranie informacji o energii i czasie w pliku `MyOutput.root`.
+3. **Analiza w ROOT**: Automatyczne tworzenie histogramów energii i czasu fotonów optycznych (makra `analyzePhotons.C`, `analyze_ntuple.C` itp.).
+4. **Tryb wizualizacji**: Możliwość podglądu trajektorii cząstek w trybie interaktywnym.
+5. **Łatwa konfiguracja**: Pliki `.mac` (np. `run.mac`, `init_vis.mac`) pozwalają na szybkie dopasowanie parametrów symulacji.
 
 ---
 
 ## Struktura repozytorium
-Poniżej przykładowa struktura katalogów i plików (może się nieco różnić w Twoim repozytorium):
+Poniżej uproszczony widok ważniejszych katalogów i plików (zgodnie z Twoją strukturą):
 
 ```
 .
-├── CMakeLists.txt               # Plik konfiguracyjny CMake
-├── My.cc                        # Główny plik źródłowy (funkcja main) uruchamiający symulację
-├── include/
-│   ├── MyAnalysis.hh
-│   ├── MyDetectorConstruction.hh
-│   ├── MyPhysicsList.hh
-│   ├── MyPrimaryGeneratorAction.hh
-│   ├── MyRunAction.hh
-│   ├── MySteppingAction.hh
-│   └── (inne .hh)
-├── src/
-│   ├── MyAnalysis.cc
-│   ├── MyDetectorConstruction.cc
-│   ├── MyPhysicsList.cc
-│   ├── MyPrimaryGeneratorAction.cc
-│   ├── MyRunAction.cc
-│   ├── MySteppingAction.cc
-│   └── (inne .cc)
-├── run.mac                      # Przykładowy plik makr do uruchomienia w trybie wsadowym
-├── init_vis.mac                 # Plik makr do wizualizacji
-├── analyzePhotons.C             # Makro ROOT do analizy ntupla
-├── PhotonHistograms.png         # Wynikowy plik graficzny z histogramami
-└── README.md                    # Niniejszy plik z opisem projektu
+├── build
+│   ├── analyzePhotons.C
+│   ├── init_vis.mac
+│   ├── run.mac
+│   ├── traj_vis.mac
+│   ├── MyOutput.root        # Wynikowa baza danych (ntupla) z symulacji
+│   ├── My                   # Plik wykonywalny po kompilacji
+│   ├── PhotonHistograms.png # Przykładowy wykres z makra ROOT
+│   └── ... (inne pliki i foldery CMake)
+└── My
+    ├── CMakeLists.txt
+    ├── include
+    │   ├── MyAnalysis.hh
+    │   ├── MyDetectorConstruction.hh
+    │   ├── MyPhysicsList.hh
+    │   ├── MyPrimaryGeneratorAction.hh
+    │   ├── MyRunAction.hh
+    │   └── MySteppingAction.hh
+    ├── My.cc                 # Główny plik źródłowy (funkcja main)
+    └── src
+        ├── MyDetectorConstruction.cc
+        ├── MyPhysicsList.cc
+        ├── MyPrimaryGeneratorAction.cc
+        ├── MyRunAction.cc
+        └── MySteppingAction.cc
 ```
+
+- **build/**: Katalog, w którym odbywa się kompilacja oraz gdzie generowane są pliki wykonywalne i pliki wynikowe (np. `MyOutput.root`). Znajdują się tu także różne pliki związane z CMake.
+- **My/**: Główna część projektu, zawierająca pliki `.cc` i `.hh`. W tym miejscu jest plik `CMakeLists.txt`, który definiuje, jak budowana jest aplikacja.
 
 ---
 
 ## Wymagania systemowe
-- **Geant4** (wraz z odpowiednimi bibliotekami fizycznymi, np. Qt, X11 lub OpenGL do wizualizacji).
-- **ROOT** (do analiz i pracy z plikami `.root`).
-- **CMake** (do konfiguracji i kompilacji projektu).
-- Kompilator C++ (np. **gcc** lub **clang**).
-- System operacyjny: Linux, macOS lub Windows (z MinGW / MSYS2).
+- System Linux (np. Ubuntu, CentOS) lub inny zgodny z Geant4.
+- Zainstalowane i skonfigurowane **Geant4** (z bibliotekami fizycznymi i interfejsami do wizualizacji).
+- Zainstalowane **ROOT** (do analizy danych i tworzenia plików `.root`).
+- **CMake** w wersji co najmniej 3.10.
+- Kompilator C++ (np. `g++` lub `clang++`).
 
 ---
 
 ## Instrukcja uruchomienia
 
-### Kompilacja i instalacja
-1. Upewnij się, że posiadasz zainstalowane Geant4 oraz ROOT i odpowiednio skonfigurowane zmienne środowiskowe (np. `source /ścieżka/do/geant4.sh`).
-2. Sklonuj repozytorium lub pobierz paczkę z kodem.
-3. W głównym katalogu projektu utwórz folder build:
+### Kompilacja i uruchomienie w trybie wsadowym
+1. **Klony repozytorium** lub skopiuj projekt do lokalnego folderu.
+2. Przejdź do katalogu `My` i utwórz folder build (lub skorzystaj z istniejącego `build` na wyższym poziomie – zależnie od preferencji):
    ```bash
+   cd My
    mkdir build
    cd build
-   ```
-4. Uruchom CMake, wskazując na katalog projektu (gdzie jest `CMakeLists.txt`):
-   ```bash
    cmake ..
-   ```
-5. Skorzystaj z komendy:
-   ```bash
    make -j4
    ```
-   - Opcjonalnie zastąp `-j4` liczbą rdzeni procesora, jeśli chcesz przyspieszyć kompilację.
-
-Po poprawnym skompilowaniu w folderze `build` pojawi się plik wykonywalny (np. `My` lub `HRC` w zależności od konfiguracji CMake).
-
-### Uruchomienie symulacji (tryb wsadowy)
-1. Przejdź do katalogu `build`:
+   Po udanej kompilacji w folderze `build` pojawi się plik wykonywalny, np. `My`.
+3. Uruchom symulację w trybie wsadowym, podając plik makr (np. `run.mac`):
    ```bash
-   cd build
+   ./My ../run.mac
    ```
-2. Uruchom symulację:
+   lub, jeśli pliki `.mac` są w folderze `build`:
    ```bash
    ./My run.mac
    ```
-   - Plik `run.mac` zawiera m.in.:
-     - Liczbę zdarzeń (`/run/beamOn 100`),
-     - Poziomy verbosów (`/control/verbose 1`),
-     - Ewentualne komendy inicjujące.
-   - Po zakończeniu symulacji w katalogu pojawi się plik `MyOutput.root`.
+4. Po zakończeniu programu w katalogu roboczym powinien pojawić się plik `MyOutput.root` z zapisanym ntuplem.
 
-### Uruchomienie wizualizacji (tryb interaktywny)
-1. Również w katalogu `build` wpisz:
+### Uruchomienie z wizualizacją (tryb interaktywny)
+1. Uruchom program bez pliku makr:
    ```bash
    ./My
    ```
-   - Jeżeli **nie** podasz pliku makr, Geant4 uruchomi się w trybie interaktywnym.
-   - Możesz wtedy załadować plik `init_vis.mac`:
-     ```plaintext
-     /control/execute init_vis.mac
-     ```
-     aby ustawić parametry wizualizacji (np. typ okna OpenGL, ustawienie kamery, włączenie rysowania trajektorii).
-
-2. W konsoli Geant4 możesz teraz wydawać dodatkowe komendy, a następnie:
+2. W oknie/terminalu Geant4 możesz teraz wpisać:
    ```plaintext
+   /control/execute init_vis.mac
    /run/beamOn 100
    ```
-   aby uruchomić 100 zdarzeń i obserwować przebieg ich trajektorii na ekranie.
+   aby włączyć wizualizację geometrii i uruchomić symulację 100 zdarzeń. Zobaczysz trajektorie cząstek na ekranie.
+3. Możesz również załadować inne makra, takie jak `traj_vis.mac`, aby dostosować ustawienia wyświetlania trajektorii.
 
-### Uruchomienie analizy w ROOT
-1. Po zakończeniu symulacji plik wynikowy (`MyOutput.root`) będzie zawierał ntuple z danymi fotonów optycznych.
-2. Uruchom ROOT:
+### Analiza danych w ROOT
+1. Upewnij się, że masz plik `MyOutput.root` (wynik symulacji).
+2. Wejdź do katalogu, w którym znajduje się makro `analyzePhotons.C` (np. `build/`).
+3. Uruchom ROOT:
    ```bash
    root
    ```
-3. W konsoli ROOT wczytaj makro:
+4. W konsoli ROOT wpisz:
    ```cpp
    .x analyzePhotons.C
    ```
-   - Makro otworzy `MyOutput.root`, odczyta drzewo `Photons` i wygeneruje histogramy energii oraz czasu fotonów optycznych.
-   - Po zakończeniu tworzenia histogramów plik graficzny `PhotonHistograms.png` zostanie zapisany w katalogu bieżącym.
+   Makro otworzy plik `MyOutput.root`, odczyta TTree `Photons` i narysuje histogramy energii oraz czasu fotonów optycznych. Zapisze je np. jako `PhotonHistograms.png`.
 
 ---
 
 ## Analiza kodu i zasady działania
 
-### Geometria i konstrukcja detektora (MyDetectorConstruction)
-- Określa rozmiary świata symulacji (World) oraz absorbera (blok wolframu o wymiarach 1×1×50 cm).
-- Dodaje włókna kwarcowe (rdzeń z kwarcu, otoczka z PMMA) rozstawione w siatce 3×3.
-- Definiuje właściwości optyczne (refrakcyjność, długość absorpcji, itp.).
+### Geometria i konstrukcja detektora
+- **MyDetectorConstruction.cc**: Definiuje świat, absorber wolframowy (1×1×50 cm), pre-absorber (miedź) oraz włókna kwarcowe z powłoką PMMA (promień 0.625 mm, długość 50 cm). Tworzy siatkę 3×3 włókien.
 
-### Lista procesów fizycznych (MyPhysicsList)
-- Zawiera rejestrację podstawowych modeli EM, fizyki hadronowej oraz procesów optycznych (Czerenkow, absorpcja Rayleigha, rozpraszanie itp.).
+### Lista procesów fizycznych
+- **MyPhysicsList.cc**: Rejestruje główne modele EM, fizykę hadronową i optyczną (Czerenkow).
 
-### Generator cząstek (MyPrimaryGeneratorAction)
-- Wytwarza pierwotny foton o energii 100 MeV skierowany na detektor.
-- Możesz zmienić typ cząstki (np. elektron), energię, pozycję i kierunek wylotu.
+### Generator cząstek
+- **MyPrimaryGeneratorAction.cc**: Ustawia pierwotny foton o energii 100 MeV, skierowany na detektor.
 
-### Akcje Run i Stepping (MyRunAction, MySteppingAction)
-- **MyRunAction**:
-  - Inicjuje analizę (tworzy menedżer analiz, ntuple).
-  - Na końcu zapisuje dane do `MyOutput.root`.
-- **MySteppingAction**:
-  - Na każdym kroku sprawdza, czy cząstka to foton optyczny.
-  - Rejestruje energię i czas, gdy foton dotrze do końca włókna.
-  - Dodaje nowy wiersz do ntupla (`FillNtuple`).
+### RunAction i SteppingAction
+- **MyRunAction.cc**: Tworzy menedżer analizy (ROOT), inicjuje ntuple `Photons` oraz zapisuje plik `.root`.
+- **MySteppingAction.cc**: Na poziomie każdego kroku sprawdza, czy cząstka to foton optyczny, rejestruje jego energię i czas, a następnie zapisuje je do ntupla.
 
-### Makro ROOT do analizy (analyzePhotons.C)
-- Otwiera plik `MyOutput.root`, pobiera drzewo (TTree) o nazwie `Photons`.
-- Odczytuje wartości energii i czasu, tworzy histogramy z automatycznym dopasowaniem zakresu.
-- Zapisuje wykresy do pliku PNG (np. `PhotonHistograms.png`).
+### Makra i wizualizacja
+- **run.mac**: Przykładowy plik makr do wykonania symulacji w trybie wsadowym.
+- **init_vis.mac** / **traj_vis.mac**: Pliki konfiguracyjne dla wizualizacji, określające typ okna (OpenGL) i sposoby rysowania trajektorii.
+- **analyzePhotons.C** (oraz inne np. `analyze_ntuple.C`): Makra ROOT do odczytu pliku `MyOutput.root` i rysowania histogramów.
 
 ---
 
 ## Możliwe rozszerzenia
-1. **Pełna siatka włókien** – Zwiększenie liczby włókien (np. do kilkudziesięciu) umożliwi szczegółową analizę rozkładu poprzecznego kaskady elektromagnetycznej.
-2. **Inne materiały** – Wymiana wolframu na inny materiał (ołowiane szkło, uran) lub zmiana włókien kwarcowych na scintillator (np. polistyren).
-3. **Analiza poprzecznego profilu** – Dodanie kodu zliczającego fotony w każdym włóknie z osobna, aby zrekonstruować pozycję trafienia cząstki.
-4. **Większe energie** – Sprawdzenie zachowania kalorymetru przy wyższych energiach (np. fotony 1 GeV).
-5. **Wielowątkowość (MT)** – Aktywacja trybu wielowątkowego w Geant4 w celu przyspieszenia symulacji dużej liczby zdarzeń.
+1. **Większa siatka włókien** – Rozszerzenie do kilkudziesięciu włókien, by lepiej uchwycić poprzeczny profil kaskady.
+2. **Różne materiały** – Zmiana wolframu na inny materiał (np. ołów, miedź) lub włókien kwarcowych na scintillator.
+3. **Analiza pozycji** – Zapis i analiza położenia fotonów optycznych w poszczególnych włóknach, by określić, gdzie dokładnie trafił foton pierwotny.
+4. **Różne energie** – Test z fotonami 1 GeV lub elektronami w szerokim zakresie energetycznym.
+5. **Tryb wielowątkowy** – Konfiguracja Geant4 do pracy z wieloma wątkami (
+`/run/numberOfThreads`) i przyspieszenie symulacji dużej liczby zdarzeń.
 
 ---
 
-## Kod źródłowy na GitHubie
-Pełny kod źródłowy projektu, wraz z plikami konfiguracyjnymi, makrami oraz dokumentacją w LaTeX, jest dostępny w repozytorium GitHub:
-
-```
-[Wstaw tutaj link do swojego repozytorium, np. https://github.com/uzytkownik/HRC-calorimeter]
-```
-
-Jeśli masz dodatkowe pytania lub sugestie, zapraszam do kontaktu lub do otworzenia *Issue* w repozytorium.
-
-**Powodzenia w dalszych pracach!**
+## Uwagi końcowe
+- Projekt został wykonany na potrzeby kursu z Geant4 i służy jako wstęp do zagadnień detekcji cząstek wysokich energii.
+- W pliku *sprawozdanie* (LaTeX) zawarto szczegółowy opis implementacji, wyniki oraz wnioski.
+- Wszelkie dodatkowe uwagi, błędy lub propozycje ulepszeń proszę zgłaszać w Issues (jeśli repo jest na GitHubie) bądź przez kontakt mailowy.
 
