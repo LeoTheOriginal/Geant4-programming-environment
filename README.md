@@ -165,6 +165,6 @@ Poniżej uproszczony widok ważniejszych katalogów i plików:
 
 ## Uwagi końcowe
 - Projekt został wykonany na potrzeby kursu z Geant4 i służy jako wstęp do zagadnień detekcji cząstek wysokich energii.
-- W pliku *sprawozdanie* (LaTeX) zawarto szczegółowy opis implementacji, wyniki oraz wnioski.
+- W pliku *sprawozdanie.pdf* zawarto szczegółowy opis implementacji, wyniki oraz wnioski.
 - Wszelkie dodatkowe uwagi, błędy lub propozycje ulepszeń proszę zgłaszać w Issues bądź przez kontakt mailowy.
 
