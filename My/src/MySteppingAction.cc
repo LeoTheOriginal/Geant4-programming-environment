@@ -28,7 +28,7 @@ void MySteppingAction::UserSteppingAction(const G4Step* step) {
   }
   // Sprawdź, czy cząstka jest fotonem optycznym
   G4Track* track = step->GetTrack();
-  G4cout << "Cząstka: " << track->GetDefinition()->GetParticleName() << G4endl;
+  // G4cout << "Cząstka: " << track->GetDefinition()->GetParticleName() << G4endl;
   // G4cout << "Cząstka: " << G4OpticalPhoton::OpticalPhotonDefinition() << G4endl;
   // if (track->GetDefinition() == G4OpticalPhoton::OpticalPhotonDefinition()) {
   //   G4cout << "Optical photon detected!" << G4endl;
@@ -64,9 +64,9 @@ void MySteppingAction::UserSteppingAction(const G4Step* step) {
   G4double energy = track->GetKineticEnergy();
   G4double time = track->GetGlobalTime();
 
-  G4cout << "Photon detected! EventID: " << eventID
-        << ", Energy: " << energy / MeV << " MeV, Time: " << time / ns
-        << " ns" << G4endl;
+  // G4cout << "Photon detected! EventID: " << eventID
+  //       << ", Energy: " << energy / MeV << " MeV, Time: " << time / ns
+  //       << " ns" << G4endl;
   
   // Zapisz dane do ntupla
   analysisManager->FillNtupleIColumn(0, eventID);
