@@ -9,7 +9,7 @@ MyPrimaryGeneratorAction::MyPrimaryGeneratorAction() {
   G4int n_particle = 1;
   particleGun = new G4ParticleGun(n_particle);
 
-  // Domyślne ustawienia działa - cząstka gamma o energii 100 MeV
+  // Default gun settings - gamma particle with an energy of 100 MeV
   G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
   G4ParticleDefinition* particle = particleTable->FindParticle("gamma");
 
