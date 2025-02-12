@@ -7,9 +7,9 @@
 #include "MyAnalysis.hh"
 #include "G4EventManager.hh"
 #include "G4SystemOfUnits.hh"
-#include "G4Cerenkov.hh"  // Dodajemy G4Cerenkov.hh
-#include "G4StepPoint.hh"  // Dodajemy G4StepPoint.hh
-#include "G4ProcessManager.hh"  // Dodajemy G4ProcessManager.hh
+#include "G4Cerenkov.hh"  
+#include "G4StepPoint.hh"  
+#include "G4ProcessManager.hh" 
 
 MySteppingAction::MySteppingAction(): totalEnergyDeposit(0.) {}
 
@@ -19,14 +19,15 @@ void MySteppingAction::UserSteppingAction(const G4Step* step) {
 
   // G4cout << "UserSteppingAction executed!" << G4endl;
   G4LogicalVolume* volume = step->GetPreStepPoint()->GetTouchableHandle()->GetVolume()->GetLogicalVolume();
-  if (volume->GetName() == "Fiber") { // Replace "TargetVolume" with the actual name of your volume
+  if (volume->GetName() == "Fiber") {
     // Get the energy deposited in this step
     G4double edep = step->GetTotalEnergyDeposit();
     
     // Add the energy deposit to the total
     totalEnergyDeposit += edep;
   }
-  // Sprawdź, czy cząstka jest fotonem optycznym
+  
+  // Check if the particle is an optical photon
   G4Track* track = step->GetTrack();
   // G4cout << "Cząstka: " << track->GetDefinition()->GetParticleName() << G4endl;
   // G4cout << "Cząstka: " << G4OpticalPhoton::OpticalPhotonDefinition() << G4endl;
@@ -37,12 +38,10 @@ void MySteppingAction::UserSteppingAction(const G4Step* step) {
   // G4cout << (track->GetDefinition()->GetParticleName() != "opticalphoton") << G4endl;
   if (track->GetDefinition()->GetParticleName() != "opticalphoton")
     return;
-
-
-
-  // Sprawdź, czy foton dociera do końca włókna
+  
+  // Check if the photon reaches the end of the fiber
   G4StepPoint* postStepPoint = step->GetPostStepPoint();
-  G4double fiberLength = 50.0 * cm;  // Długość włókna
+  G4double fiberLength = 50.0 * cm;
   
   // G4cout << (postStepPoint->GetPosition().z() < (fiberLength / 2)) << G4endl;
   // if (postStepPoint->GetPosition().z() < fiberLength / 2) return;
@@ -53,14 +52,14 @@ void MySteppingAction::UserSteppingAction(const G4Step* step) {
   // G4cout << (!cerenkovProcess || step->GetPostStepPoint()->GetProcessDefinedStep() != cerenkovProcess) << G4endl;
   // if (!cerenkovProcess || step->GetPostStepPoint()->GetProcessDefinedStep() != cerenkovProcess) return;
 
-  // Pobierz wskaźnik do managera analizy
+  // Get a pointer to the analysis manager
   auto analysisManager = G4AnalysisManager::Instance();
 
-  // Pobierz numer zdarzenia
+  // Get the event number
   G4int eventID =
       G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID();
 
-  // Pobierz energię i czas fotonu
+  // Get the photon's energy and time
   G4double energy = track->GetKineticEnergy();
   G4double time = track->GetGlobalTime();
 
@@ -68,7 +67,7 @@ void MySteppingAction::UserSteppingAction(const G4Step* step) {
   //       << ", Energy: " << energy / MeV << " MeV, Time: " << time / ns
   //       << " ns" << G4endl;
   
-  // Zapisz dane do ntupla
+  // Save the data to the ntuple
   analysisManager->FillNtupleIColumn(0, eventID);
   analysisManager->FillNtupleDColumn(1, energy / MeV);
   analysisManager->FillNtupleDColumn(2, time / ns);
