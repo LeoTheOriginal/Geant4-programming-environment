@@ -48,16 +48,16 @@ void MyDetectorConstruction::DefineMaterials() {
   mptPMMA->AddProperty("ABSLENGTH", photonEnergy, absorptionPMMA, 2);
   pmma->SetMaterialPropertiesTable(mptPMMA);
 
-  // --- Właściwości optyczne dla wolframu ---
-  G4double rindexTungsten[] = {3.3, 3.3};  // Współczynnik załamania
-  G4double absorptionTungsten[] = {10.*cm, 10.*cm};  // Długość absorpcji
+  // --- Optical properties for Tungsten ---
+  G4double rindexTungsten[] = {3.3, 3.3};  // Refractive index
+  G4double absorptionTungsten[] = {10.*cm, 10.*cm};  // Absorption length
 
   G4MaterialPropertiesTable* mptTungsten = new G4MaterialPropertiesTable();
   mptTungsten->AddProperty("RINDEX", photonEnergy, rindexTungsten, 2);
   mptTungsten->AddProperty("ABSLENGTH", photonEnergy, absorptionTungsten, 2);
   tungsten->SetMaterialPropertiesTable(mptTungsten);
 
-  // --- Właściwości powierzchni ---
+  // --- Surface properties ---
   G4OpticalSurface* opticalSurface = new G4OpticalSurface("FiberSurface");
   opticalSurface->SetType(dielectric_metal);
   opticalSurface->SetModel(unified);
