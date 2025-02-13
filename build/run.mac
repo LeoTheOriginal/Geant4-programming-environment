@@ -27,6 +27,6 @@
 
 # Start symulacji:
 #/run/beamOn 100
-/run/beamOn 100
+/run/beamOn 10000
 
 # Po zakończeniu runa plik ROOT będzie zapisany i zamknięty w MyRunAction::EndOfRunAction()
