@@ -1,35 +1,40 @@
 #include "MyRunAction.hh"
-#include "MyRun.hh"
+
 #include "G4Run.hh"
-#include "G4ios.hh"
-#include "G4AnalysisManager.hh"
+#include "G4SystemOfUnits.hh"
+#include "MyAnalysis.hh"
 
-MyRunAction::MyRunAction() {}
-
+MyRunAction::MyRunAction() {
+  G4cout << "MyRunAction initialized!" << G4endl;
+}
 
 MyRunAction::~MyRunAction() {}
 
-
 void MyRunAction::BeginOfRunAction(const G4Run*) {
-    G4cout << "### Run start ###" << G4endl;
-    auto analysisManager = G4AnalysisManager::Instance();
-    analysisManager->OpenFile("output.root");
+  // Get analysis manager
+  auto analysisManager = G4AnalysisManager::Instance();
 
-    analysisManager->CreateNtuple("Photons", "Optical photons");
-    analysisManager->CreateNtupleDColumn("Energy"); // Kolumna 0
-    analysisManager->CreateNtupleDColumn("Time");   // Kolumna 1
-    analysisManager->FinishNtuple();
+  // Create ntuple
+  analysisManager->CreateNtuple("Photons", "Photon Data");
+  analysisManager->CreateNtupleIColumn("EventID");
+  analysisManager->CreateNtupleDColumn("Energy");
+  analysisManager->CreateNtupleDColumn("Time");
+  analysisManager->FinishNtuple();
+
+  // Open an output file
+  analysisManager->OpenFile("MyOutput.root");
 }
 
-void MyRunAction::EndOfRunAction(const G4Run* aRun) {
-  G4cout << "### Run end. Number of events: " 
-         << aRun->GetNumberOfEvent() << " ###" << G4endl;
+void MyRunAction::EndOfRunAction(const G4Run*) {
+  // Get analysis manager
+  auto analysisManager = G4AnalysisManager::Instance();
+  if (!analysisManager) {
+    G4cerr << "ERROR: AnalysisManager is null in EndOfRunAction!" << G4endl;
+    return;
+  }
 
-  G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
-    analysisManager->Write();
-    analysisManager->CloseFile();
-}
-
-G4Run* MyRunAction::GenerateRun() {
-  return new MyRun();
+  // Save histograms & ntuple and close file
+  analysisManager->Write();
+  analysisManager->CloseFile();
+  G4cout << "Dane zostały zapisane do pliku MyOutput.root" << G4endl;
 }

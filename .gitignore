@@ -10,6 +10,7 @@ My/src/MyDetectorConstruction.cc
 !build/init_vis.mac
 !build/run.mac
 !build/traj_vis.mac
+!build/analyze_photons.C
 
 # Ignorowanie plików generowanych przez CMake
 CMakeCache.txt

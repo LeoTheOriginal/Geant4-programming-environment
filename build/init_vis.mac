@@ -9,3 +9,7 @@
 /vis/scene/add/trajectories smooth
 /vis/viewer/set/autoRefresh true
 /vis/viewer/flush
+
+/vis/modeling/trajectories/create/drawByCharge
+/vis/modeling/trajectories/drawByCharge-0/default/setDrawStepPts true
+/vis/modeling/trajectories/drawByCharge-0/default/setStepPtsSize 2
