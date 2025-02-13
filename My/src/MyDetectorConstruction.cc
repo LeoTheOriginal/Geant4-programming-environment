@@ -83,13 +83,13 @@ void MyDetectorConstruction::SetupGeometry() {
   fpWorldPhysical = new G4PVPlacement(
       nullptr, G4ThreeVector(), fpWorldLogical, "World", nullptr, false, 0);
 
-  // Absorber (Tungsten)
+  // Absorber (Copper)
   G4double absorberSizeXY = 1.0 * cm;
   G4double absorberSizeZ = 50.0 * cm;
   G4Box* absorberSolid = new G4Box("Absorber", absorberSizeXY / 2,
                                    absorberSizeXY / 2, absorberSizeZ / 2);
   G4LogicalVolume* absorberLogical =
-      new G4LogicalVolume(absorberSolid, G4Material::GetMaterial("G4_W"),
+      new G4LogicalVolume(absorberSolid, G4Material::GetMaterial("G4_Cu"),
                           "Absorber");
   new G4PVPlacement(nullptr, G4ThreeVector(), absorberLogical, "Absorber",
                     fpWorldLogical, false, 0);
