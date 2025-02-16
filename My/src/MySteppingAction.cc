@@ -29,11 +29,6 @@ void MySteppingAction::UserSteppingAction(const G4Step* step) {
   
   // Check if the particle is an optical photon
   G4Track* track = step->GetTrack();
-  // G4cout << "Cząstka: " << track->GetDefinition()->GetParticleName() << G4endl;
-  // G4cout << "Cząstka: " << G4OpticalPhoton::OpticalPhotonDefinition() << G4endl;
-  // if (track->GetDefinition() == G4OpticalPhoton::OpticalPhotonDefinition()) {
-  //   G4cout << "Optical photon detected!" << G4endl;
-  // }
 
   // G4cout << (track->GetDefinition()->GetParticleName() != "opticalphoton") << G4endl;
   if (track->GetDefinition()->GetParticleName() != "opticalphoton")
@@ -65,11 +60,21 @@ void MySteppingAction::UserSteppingAction(const G4Step* step) {
 
   // G4cout << "Photon detected! EventID: " << eventID
   //       << ", Energy: " << energy / MeV << " MeV, Time: " << time / ns
-  //       << " ns" << G4endl;
+  //       << " ns" << G4endl;1x1x50cm^3
   
+
+  G4ThreeVector position = step->GetPostStepPoint()->GetPosition();
+  xPos.push_back(position.x());
+  yPos.push_back(position.y());
+  zPos.push_back(position.z());
+
   // Save the data to the ntuple
   analysisManager->FillNtupleIColumn(0, eventID);
   analysisManager->FillNtupleDColumn(1, energy / MeV);
   analysisManager->FillNtupleDColumn(2, time / ns);
+  analysisManager->FillNtupleDColumn(3, position.x() / cm);
+  analysisManager->FillNtupleDColumn(4, position.y() / cm);
+  analysisManager->FillNtupleDColumn(5, position.z() / cm);
   analysisManager->AddNtupleRow();
+
 }

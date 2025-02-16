@@ -19,6 +19,9 @@ void MyRunAction::BeginOfRunAction(const G4Run*) {
   analysisManager->CreateNtupleIColumn("EventID");
   analysisManager->CreateNtupleDColumn("Energy");
   analysisManager->CreateNtupleDColumn("Time");
+  analysisManager->CreateNtupleDColumn("xPos"); //, xPos
+  analysisManager->CreateNtupleDColumn("yPos");
+  analysisManager->CreateNtupleDColumn("zPos");
   analysisManager->FinishNtuple();
 
   // Open an output file

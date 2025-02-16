@@ -1,9 +1,10 @@
 #ifndef MYSTEPPINGACTION_HH
 #define MYSTEPPINGACTION_HH
 
-#include "G4SystemOfUnits.hh"  // Add this line
+#include "G4SystemOfUnits.hh"
 #include "G4UserSteppingAction.hh"
 #include "G4Types.hh"
+#include <vector>
 
 class MySteppingAction : public G4UserSteppingAction {
  public:
@@ -14,7 +15,8 @@ class MySteppingAction : public G4UserSteppingAction {
 
 
   private:
-  G4double totalEnergyDeposit; // Add this line
+  G4double totalEnergyDeposit;
+  std::vector<double> xPos, yPos, zPos; 
 };
 
 #endif
