@@ -3,6 +3,8 @@ build/*
 Build/
 *.tar
 
+
+*.root
 #roznice w detektorze
 My/src/MyDetectorConstruction.cc
 
