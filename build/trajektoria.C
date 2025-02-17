@@ -9,7 +9,6 @@
 #include <iostream>
 
 void trajektoria(int targetCaseNumber) {
-    // Otwórz plik ROOT z ntuplem
     TFile *file = new TFile("MyOutput.root", "READ");
     if (!file || file->IsZombie()) {
         std::cerr << "Błąd otwierania pliku ROOT!" << std::endl;
@@ -31,7 +30,6 @@ void trajektoria(int targetCaseNumber) {
     tree->SetBranchAddress("yPos", &yPos);
     tree->SetBranchAddress("zPos", &zPos);
 
-    // Tworzenie wektorów do przechowywania pozycji fotonu
     std::vector<Double_t> xPositions;
     std::vector<Double_t> zPositions;
 
