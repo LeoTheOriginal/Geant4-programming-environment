@@ -84,4 +84,6 @@ void analyzePhotons() {
 
   // Save the canvas as a PNG image
   c->SaveAs("PhotonHistograms.png");
+  c->SaveAs("wykresy_fotonow_optycznych.pdf");
+
 }

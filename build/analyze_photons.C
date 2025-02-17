@@ -1,4 +1,4 @@
-{
+void analyze_photons() {
   // Otwieramy plik ROOT
   TFile *file = new TFile("MyOutput.root");
 
