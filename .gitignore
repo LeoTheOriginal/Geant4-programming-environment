@@ -17,6 +17,16 @@ My/src/MyDetectorConstruction.cc
 !build/Histograms.png
 !build/PhotonHistograms.pdf
 !build/PhotonHistograms.png
+!build/photon_trajectory_1.png
+!build/photon_trajectory_2.png
+!build/photon_trajectory_3.png
+!build/photon_trajectory_4.png
+!build/photon_trajectory_5.png
+!build/photon_trajectory_6.png
+!build/photon_trajectory_7.png
+!build/photon_trajectory_8.png
+!build/trajektoria.C
+
 
 # Ignorowanie plików generowanych przez CMake
 CMakeCache.txt
